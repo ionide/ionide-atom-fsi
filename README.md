@@ -1,4 +1,4 @@
-#ionide-fsharp
+#ionide-fsi
 
 
 It's part of [Ionide](ionide.io) plugin suite.
