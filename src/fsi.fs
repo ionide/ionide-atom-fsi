@@ -9,7 +9,7 @@ open FunScript.TypeScript.AtomCore
 open FunScript.TypeScript.text_buffer
 open FunScript.TypeScript.path
 open Atom
-open Atom.FSharp
+open Atom.FSharp 
 
 [<ReflectedDefinition>]
 module FsiService =

@@ -1,7 +1,7 @@
 #ionide-fsi
 
 
-It's part of [Ionide](ionide.io) plugin suite.
+It's part of [Ionide](http://ionide.io) plugin suite.
 F# Interactive Panel in Atom.
 
 Panel is readonly - You can send code to it using Send File / Selection / Line commands
