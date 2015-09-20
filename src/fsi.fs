@@ -98,7 +98,6 @@ module FsiService =
         editor.getText() |> sendToFsi
         ()
 
-
     let activate () =
         Globals.atom.commands.add("atom-workspace", "FSI:Open", openFsi |> unbox<Function>) |> ignore
         Globals.atom.commands.add("atom-text-editor", "FSI:Send-Line", sendLine |> unbox<Function>)  |> ignore
@@ -113,9 +112,8 @@ module FsiService =
         let s = Globals.atom.config.onDidChange ("ionide-fsi.FsiPath",
                     (fun n -> fsipath <- n.newValue  ) |> unbox<Function>)
         subscriptions.Add s
-
-
-
+        if not(Globals._process.platform.StartsWith "win") then
+          Globals.atom.config.set("ionide-fsi.FsiPath", "fsharpi") |> ignore
         ()
 
     let deactivate () =
