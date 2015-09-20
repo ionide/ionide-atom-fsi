@@ -98,7 +98,6 @@ module FsiService =
         editor.getText() |> sendToFsi
         ()
 
-
     let activate () =
         Globals.atom.commands.add("atom-workspace", "FSI:Open", openFsi |> unbox<Function>) |> ignore
         Globals.atom.commands.add("atom-text-editor", "FSI:Send-Line", sendLine |> unbox<Function>)  |> ignore
@@ -113,9 +112,11 @@ module FsiService =
         let s = Globals.atom.config.onDidChange ("ionide-fsi.FsiPath",
                     (fun n -> fsipath <- n.newValue  ) |> unbox<Function>)
         subscriptions.Add s
-
-
-
+        let fsipathWin, fsipathMono = "C:/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe", "fsharpi"
+        match Atom.FSharp.Process.isWin() with
+        | true when fsipath <> fsipathWin -> Globals.atom.config.set("ionide-fsi.FsiPath", fsipathWin) |> ignore
+        | false when fsipath <> fsipathMono -> Globals.atom.config.set("ionide-fsi.FsiPath", fsipathMono) |> ignore
+        | _ -> () // Do nothing
         ()
 
     let deactivate () =
