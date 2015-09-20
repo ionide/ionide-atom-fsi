@@ -112,8 +112,11 @@ module FsiService =
         let s = Globals.atom.config.onDidChange ("ionide-fsi.FsiPath",
                     (fun n -> fsipath <- n.newValue  ) |> unbox<Function>)
         subscriptions.Add s
-        if not(Globals._process.platform.StartsWith "win") then
-          Globals.atom.config.set("ionide-fsi.FsiPath", "fsharpi") |> ignore
+        let fsipathWin, fsipathMono = "C:/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe", "fsharpi"
+        match Atom.FSharp.Process.isWin() with
+        | true when fsipath <> fsipathWin -> Globals.atom.config.set("ionide-fsi.FsiPath", fsipathWin) |> ignore
+        | false when fsipath <> fsipathMono -> Globals.atom.config.set("ionide-fsi.FsiPath", fsipathMono) |> ignore
+        | _ -> () // Do nothing
         ()
 
     let deactivate () =
