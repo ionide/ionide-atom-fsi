@@ -9,7 +9,7 @@ open FunScript.TypeScript.AtomCore
 open FunScript.TypeScript.text_buffer
 open FunScript.TypeScript.path
 open Atom
-open Atom.FSharp 
+open Atom.FSharp
 
 [<ReflectedDefinition>]
 module FsiService =
@@ -113,6 +113,11 @@ module FsiService =
         let s = Globals.atom.config.onDidChange ("ionide-fsi.FsiPath",
                     (fun n -> fsipath <- n.newValue  ) |> unbox<Function>)
         subscriptions.Add s
+
+        if Process.isWin () |> not && fsipath = "C:/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe" then
+            Globals.atom.config.set("ionide-fsi.FsiPath", "fsharpi") |> ignore
+            fsipath <- "fsharpi"
+
 
 
 
