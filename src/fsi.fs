@@ -27,7 +27,7 @@ module FsiService =
 
 
     /// Starts the Fsi Process with a listener on its standard out stream
-    let private startFsi () =
+    let private startFsi () = 
         let fs = Process.spawnSame fsipath ""
         fsiProc <- fs |> Some
         fs.stderr.on ("data", unbox<Function> (handle)) |> ignore
@@ -116,7 +116,7 @@ module FsiService =
 
         if Process.isWin () |> not && fsipath = "C:/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe" then
             Globals.atom.config.set("ionide-fsi.FsiPath", "fsharpi")
-            fsipath <- "fsharpi" 
+            fsipath <- "fsharpi"
 
 
 
