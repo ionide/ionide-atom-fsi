@@ -1,3 +1,6 @@
+### 1.0.6 - 23.09.2015
+* Fix grammar bug
+
 ### 1.0.5 - 21.09.2015
 * Fix default path on Mac
 
