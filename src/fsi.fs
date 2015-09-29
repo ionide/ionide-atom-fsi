@@ -13,7 +13,7 @@ open Atom.FSharp
 
 [<ReflectedDefinition>]
 module FsiService =
-    let subscriptions = ResizeArray()
+    let subscriptions = ResizeArray() 
     let mutable private fsipath = ""
     let mutable private fsiEditor : IEditor option = None
     let mutable private fsiProc   : ChildProcess option = None
@@ -27,7 +27,7 @@ module FsiService =
 
 
     /// Starts the Fsi Process with a listener on its standard out stream
-    let private startFsi () = 
+    let private startFsi () =
         let fs = Process.spawnSame fsipath ""
         fsiProc <- fs |> Some
         fs.stderr.on ("data", unbox<Function> (handle)) |> ignore
@@ -107,6 +107,7 @@ module FsiService =
         Globals.atom.commands.add("atom-text-editor", "FSI:Reset-REPL", resetFsi |> unbox<Function>)  |> ignore
         Globals.atom.workspace.getTextEditors() |> Array.iter(fun e ->
             if e.getTitle() = "F# Interactive" then
+                e.buffer.setText "" |> ignore
                 openFsi()
             )
         fsipath <-  Globals.atom.config.get("ionide-fsi.FsiPath") |> unbox<string>
