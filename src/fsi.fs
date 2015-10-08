@@ -13,7 +13,7 @@ open Atom.FSharp
 
 [<ReflectedDefinition>]
 module FsiService =
-    let subscriptions = ResizeArray() 
+    let subscriptions = ResizeArray()
     let mutable private fsipath = ""
     let mutable private fsiEditor : IEditor option = None
     let mutable private fsiProc   : ChildProcess option = None
@@ -58,6 +58,8 @@ module FsiService =
     // TODO - trying to get it to open the repl if it's not already open
     let private sendToFsi (msg' : string) =
         if fsiProc.IsNone then openFsi()
+        fsiEditor |> Option.iter (fun ed ->
+            if JS.getProperty "alive" ed |> not then openFsi () )
 
         let editor = Globals.atom.workspace.getActiveTextEditor()
         if isFSharpEditor editor then
