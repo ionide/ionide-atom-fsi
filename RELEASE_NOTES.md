@@ -1,3 +1,6 @@
+### 1.0.8 - 08.10.2015
+* Fix editor re-creation bug
+
 ### 1.0.7 - 29.09.2015
 * Clear FSI after restart of editor
 
