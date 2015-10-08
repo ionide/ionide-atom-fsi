@@ -1,7 +1,7 @@
 {
   "name": "ionide-fsi",
   "main": "./lib/fsi",
-  "version": "0.0.0",
+  "version": "1.0.8",
   "description": "F# Interactive Panel in Atom.",
   "repository": "https://github.com/Ionide/ionide-fsi",
   "license": "MIT",
