@@ -1,5 +1,4 @@
-# Ionide-FSI [![Join the chat at https://gitter.im/ionide/ionide-project](https://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square)](https://gitter.im/ionide/ionide-project?utm_source=share-link&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
+# Ionide-FSI 
 
 It's part of [Ionide](http://ionide.io) plugin suite.
 F# Interactive Panel in Atom.
@@ -7,6 +6,10 @@ F# Interactive Panel in Atom.
 Panel is readonly - You can send code to it using Send File / Selection / Line commands
 
 Plugin requires specifying path to FSI.exe on Your computer
+
+
+[![Join the chat at https://gitter.im/ionide/ionide-project](https://img.shields.io/badge/gitter-join%20chat%20%E2%86%92-brightgreen.svg?style=flat-square)](https://gitter.im/ionide/ionide-project?utm_source=share-link&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) --  [Need Help? You can find us on Gitter](https://gitter.im/ionide/ionide-project)   
+
 
 ## Build
 
