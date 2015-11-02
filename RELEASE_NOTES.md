@@ -1,3 +1,6 @@
+### 1.0.9 - 02.11.2015
+* Update Readme
+
 ### 1.0.8 - 08.10.2015
 * Fix editor re-creation bug
 
