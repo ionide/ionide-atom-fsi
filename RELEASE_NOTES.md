@@ -1,3 +1,6 @@
+### 1.0.10 - 26.01.2016
+* Fix process spawning
+
 ### 1.0.9 - 02.11.2015
 * Update Readme
 
