@@ -1,3 +1,6 @@
+### 1.1.0 - 01.02.2016
+* Move to custom FSI panel
+
 ### 1.0.11 - 01.02.2016
 * Add silentCd
 
