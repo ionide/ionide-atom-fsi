@@ -70,8 +70,15 @@ module FsiService =
                 ed.insertText msg |> ignore
                 )
             fsiProc |> Option.iter( fun cproc ->
-                let cd = "#cd \"\"\"" + dir + "\"\"\";;\n"
-                cproc.stdin.write(cd, "utf-8")
+                let msg' =
+                    try
+                        let file = editor.getPath()
+                        "\n"
+                        + (sprintf "# silentCd @\"%s\" ;; " dir) + "\n"
+                        + (sprintf "# %d @\"%s\" " 1 file) + "\n"
+                        + msg
+                    with
+                    | _ -> msg
                 cproc.stdin.write(msg, "utf-8")
                 )
 
