@@ -1,3 +1,6 @@
+### 1.0.11 - 01.02.2016
+* Add silentCd
+
 ### 1.0.10 - 26.01.2016
 * Fix process spawning
 
