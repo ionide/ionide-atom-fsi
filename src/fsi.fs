@@ -2,6 +2,8 @@
 module Ionide.Fsi
 
 open System
+open System.Text.RegularExpressions
+
 
 open FunScript
 open FunScript.TypeScript
@@ -35,8 +37,9 @@ module FsiView =
         let fsi = jq ".fsi"
         str.Split('\n') |> Array.iter (fun s ->
             if String.IsNullOrEmpty s |> not then
-                let r = sprintf "<div class='fsi-row'>%s</div>" s
+                let r = sprintf "<pre class='fsi-row'>%s</pre>" s
                 fsi.append r |> ignore
+                fsi.scrollTop(99999999.) |> ignore
         )
 
 
@@ -93,15 +96,8 @@ module FsiService =
 
             fsiEditor |> Option.iter( fun ed -> FsiView.insert msg)
             fsiProc |> Option.iter( fun cproc ->
-                let msg' =
-                    try
-                        let file = editor.getPath()
-                        "\n"
-                        + (sprintf "# silentCd @\"%s\" ;; " dir) + "\n"
-                        + (sprintf "# %d @\"%s\" " 1 file) + "\n"
-                        + msg
-                    with
-                    | _ -> msg
+                let cd = "#cd \"\"\"" + dir + "\"\"\";;\n"
+                cproc.stdin.write(cd, "utf-8")
                 cproc.stdin.write(msg, "utf-8")
                 )
 
