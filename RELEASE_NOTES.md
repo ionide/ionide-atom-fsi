@@ -1,3 +1,6 @@
+### 1.1.1 - 01.02.2016
+* Fix panel style
+
 ### 1.1.0 - 01.02.2016
 * Move to custom FSI panel
 
