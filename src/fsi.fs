@@ -37,7 +37,12 @@ module FsiView =
         let fsi = jq ".fsi"
         str.Split('\n') |> Array.iter (fun s ->
             if String.IsNullOrEmpty s |> not then
-                let r = sprintf "<pre class='fsi-row'>%s</pre>" s
+                let m = Regex.Match(s, @"(?:Google Chart|Foogle Chart|Plotly Chart), (http.*\.html)")
+                let r =
+                    if m.Success then
+                        sprintf "<iframe class='fsi-frame' src='%s' />" m.Groups.[1].Value
+                    else
+                        sprintf "<pre class='fsi-row'>%s</pre>" s
                 fsi.append r |> ignore
                 fsi.scrollTop(99999999.) |> ignore
         )
