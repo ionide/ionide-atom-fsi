@@ -30,6 +30,7 @@ node_modules
 Test/
 Test/obj/
 Test/bin/
+paket-files
 .paket/paket.exe
 packages
 Test/Script.fsx
