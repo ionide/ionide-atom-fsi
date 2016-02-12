@@ -52,3 +52,4 @@ src/paket/README.md
 release.cmd
 *.js
 .fake
+issueList.md
