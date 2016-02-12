@@ -13,7 +13,7 @@ open FunScript.TypeScript.AtomCore
 open FunScript.TypeScript.text_buffer
 open FunScript.TypeScript.path
 open Atom
-open Atom.FSharp
+open Atom.FSharp 
 
 [<ReflectedDefinition>]
 [<AutoOpen>]
@@ -91,13 +91,20 @@ module FsiService =
 
         let editor = Globals.atom.workspace.getActiveTextEditor()
         if isFSharpEditor editor then
-            let dir = Globals.dirname(editor.getPath())
             let msg = msg'.Replace("\uFEFF", "") + ";;\n"
 
             fsiEditor |> Option.iter( fun ed -> FsiView.insert msg)
             fsiProc |> Option.iter( fun cproc ->
-                let cd = "#cd \"\"\"" + dir + "\"\"\";;\n"
-                cproc.stdin.write(cd, "utf-8")
+                try
+                    let dir = Globals.dirname(editor.getPath())
+                    let file = editor.getPath()
+                    let cd =
+                        "\n"
+                        + (sprintf "# silentCd @\"%s\" ;; " dir) + "\n"
+                        + (sprintf "# %d @\"%s\" " 1 file) + "\n"
+                    cproc.stdin.write(cd, "utf-8")
+                with
+                | _ -> ()
                 cproc.stdin.write(msg, "utf-8")
                 )
 
