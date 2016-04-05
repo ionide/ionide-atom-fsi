@@ -58,7 +58,7 @@ module FsiService =
 
     /// Starts the Fsi Process with a listener on its standard out stream
     let private startFsi () =
-        let fs = Process.spawnSame fsipath ""
+        let fs = Process.spawnSame fsipath "--fsi-server-input-codepage:65001"
         fsiProc <- fs |> Some
         fs.stderr.on ("data", unbox<Function> (handle)) |> ignore
         fs.stdout.on ("data", unbox<Function> (handle)) |> ignore
@@ -91,7 +91,7 @@ module FsiService =
 
         let editor = Globals.atom.workspace.getActiveTextEditor()
         if isFSharpEditor editor then
-            let msg = msg'.Replace("\uFEFF", "") + ";;\n"
+            let msg = msg' + ";;\n"
 
             fsiEditor |> Option.iter( fun ed -> FsiView.insert msg)
             fsiProc |> Option.iter( fun cproc ->
