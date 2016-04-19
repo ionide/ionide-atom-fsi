@@ -45,19 +45,19 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="FunScript.TypeScript.Binding.atom">
-      <HintPath>..\lib\FunScript.TypeScript.Binding.atom.dll</HintPath>
+      <HintPath>..\paket-files\github.com\ionide\ionide-helpers\release\FunScript.TypeScript.Binding.atom.dll</HintPath>
     </Reference>
     <Reference Include="FunScript.TypeScript.Binding.jquery">
-      <HintPath>..\lib\FunScript.TypeScript.Binding.jquery.dll</HintPath>
+      <HintPath>..\paket-files\github.com\ionide\ionide-helpers\release\FunScript.TypeScript.Binding.jquery.dll</HintPath>
     </Reference>
     <Reference Include="FunScript.TypeScript.Binding.lib">
-      <HintPath>..\lib\FunScript.TypeScript.Binding.lib.dll</HintPath>
+      <HintPath>..\paket-files\github.com\ionide\ionide-helpers\release\FunScript.TypeScript.Binding.lib.dll</HintPath>
     </Reference>
     <Reference Include="FunScript.TypeScript.Binding.node">
-      <HintPath>..\lib\FunScript.TypeScript.Binding.node.dll</HintPath>
+      <HintPath>..\paket-files\github.com\ionide\ionide-helpers\release\FunScript.TypeScript.Binding.node.dll</HintPath>
     </Reference>
     <Reference Include="Ionide.Helpers">
-      <HintPath>..\lib\Ionide.Helpers.dll</HintPath>
+      <HintPath>..\paket-files\github.com\ionide\ionide-helpers\release\Ionide.Helpers.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Choose>
