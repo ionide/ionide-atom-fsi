@@ -1,4 +1,4 @@
-﻿module Ionide.Paket.Generator
+﻿module Ionide.Fsi.Generator
 
 // --------------------------------------------------------------------------------------
 // Load the F# implementation and specify parameters for the translator
@@ -70,7 +70,10 @@ let translateModules fileName =
         yield "var child_process = require('child_process');"
         yield "window.$ = require('jquery');"
         yield "var atomSpaceView = require('atom-space-pen-views');"
+        yield "var fs = require('fs');"
+        yield "var util = require('util');"
         yield "var path = require('path');"
+        yield "var Emitter = require('event-kit').Emitter;"
         yield "var FsiView = require('./fsi-view')"
         yield ""
         yield "function wrappedFunScript() { \n" + coreJS + "\n }"

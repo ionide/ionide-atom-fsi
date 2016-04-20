@@ -1,6 +1,10 @@
 source https://nuget.org/api/v2
 
-git git@github.com:ionide/ionide-helpers.git master build:"build.cmd"
+git https://github.com/ionide/ionide-helpers.git master build:"build.cmd"
+git https://github.com/tpetricek/FsInteractiveService.git master build:"build.cmd CopyBinaries"
+
+github ionide/ionide-fsharp:develop src/Core/Control.fs
+github ionide/ionide-fsharp:develop src/Core/Events.fs
 
 nuget FAKE
 nuget FunScript

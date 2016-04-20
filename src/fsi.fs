@@ -15,7 +15,6 @@ open FunScript.TypeScript.path
 open Atom
 open Atom.FSharp 
 
-[<ReflectedDefinition>]
 [<AutoOpen>]
 module Bindings =
     [<JSEmitInline("new FsiView()")>]
@@ -27,7 +26,6 @@ module Bindings =
         [<FunScript.JSEmitInline("({0}.paneForItem({1}))")>]
         member __.paneForItem(o : obj) : obj = failwith "JS"
 
-[<ReflectedDefinition>]
 module FsiView =
     let clear () =
         let fsi = jq ".fsi"
@@ -39,37 +37,25 @@ module FsiView =
             if String.IsNullOrEmpty s |> not then
                 let r = sprintf "<pre class='fsi-row'>%s</pre>" s
                 fsi.append r |> ignore
-                fsi.scrollTop(99999999.) |> ignore
-        )
+                fsi.scrollTop(99999999.) |> ignore )
 
 
-[<ReflectedDefinition>]
 module FsiService =
-    let subscriptions = ResizeArray()
-    let mutable private fsipath = ""
+    //let subscriptions = ResizeArray()
     let mutable private fsiEditor : IPanel option = None
-    let mutable private fsiProc   : ChildProcess option = None
 
-    let private handle (data : obj) =
+    let private handle (data : string) =
         if data <> null then
-            let response = data.ToString().Replace("\\","\\\\")
-            fsiEditor |> Option.iter (fun _ -> FsiView.insert response)
-
+            let response = data.Replace("\\","\\\\")
+            FsiView.insert response
 
     /// Starts the Fsi Process with a listener on its standard out stream
     let private startFsi () =
-        let fs = Process.spawnSame fsipath "--fsi-server-input-codepage:65001"
-        fsiProc <- fs |> Some
-        fs.stderr.on ("data", unbox<Function> (handle)) |> ignore
-        fs.stdout.on ("data", unbox<Function> (handle)) |> ignore
+        ()        
 
     /// Kills the Fsi Process and reloads the REPL pane
     let private resetFsi () =
-        if fsiProc.IsSome then fsiProc.Value.kill()
-        if fsiEditor.IsSome then
-            startFsi ()
-            FsiView.clear ()
-
+        InteractiveService.reset () |> Async.StartImmediate
 
     /// Opens the REPL pane and starts an Fsi Process if needed
     let private openFsi () =
@@ -78,14 +64,14 @@ module FsiService =
         Globals.atom.workspace._open("F# Interactive", {split = "right"})._done((fun ed ->
             fsiEditor <- Some ed
             //ed.setGrammar g
-            if fsipath <> "" then
-                resetFsi ()
+            //if fsipath <> "" then
+            //    resetFsi ()
             ) |> unbox<Function>)
 
     /// Send a block of text to FSI
     // TODO - trying to get it to open the repl if it's not already open
     let private sendToFsi (msg' : string) =
-        if fsiProc.IsNone then openFsi()
+        //if fsiProc.IsNone then openFsi()
         fsiEditor |> Option.iter (fun ed ->
             if Globals.atom.views.getView ed |> JS.isDefined |> not then openFsi () )
 
@@ -94,7 +80,13 @@ module FsiService =
             let msg = msg' + ";;\n"
 
             fsiEditor |> Option.iter( fun ed -> FsiView.insert msg)
-            fsiProc |> Option.iter( fun cproc ->
+            async { let! res = InteractiveService.eval (editor.getPath()) 1 msg
+                    match res with
+                    | Success s -> handle s.output
+                    | Exception e ->  handle e.output
+                    | Error e -> handle e.output } |> Async.StartImmediate
+
+            (*fsiProc |> Option.iter( fun cproc ->
                 try
                     let dir = Globals.dirname(editor.getPath())
                     let file = editor.getPath()
@@ -106,7 +98,7 @@ module FsiService =
                 with
                 | _ -> ()
                 cproc.stdin.write(msg, "utf-8")
-                )
+                )*)
 
 
     /// Send the current line at the cursor's position to FSI
@@ -116,7 +108,6 @@ module FsiService =
         |> sendToFsi
         editor.moveDown(1.)
         editor.moveToBeginningOfLine()
-        ()
 
     /// Send the currently selected text to FSI
     let private sendSelection () =
@@ -124,14 +115,12 @@ module FsiService =
         editor.getSelectedText () |> sendToFsi
         editor.moveDown(1.)
         editor.moveToBeginningOfLine()
-        ()
 
 
     /// Send all of the text of the active editor window to FSI
     let private sendFile () =
         let editor = Globals.atom.workspace.getActiveTextEditor()
         editor.getText() |> sendToFsi
-        ()
 
     let opener (uri : string) =
         try
@@ -150,14 +139,14 @@ module FsiService =
         Globals.atom.commands.add("atom-text-editor", "FSI:Send-Selection", sendSelection |> unbox<Function>)  |> ignore
         Globals.atom.commands.add("atom-text-editor", "FSI:Send-File", sendFile |> unbox<Function>)  |> ignore
         Globals.atom.commands.add("atom-text-editor", "FSI:Reset-REPL", resetFsi |> unbox<Function>)  |> ignore
-        fsipath <-  Globals.atom.config.get("ionide-fsi.FsiPath") |> unbox<string>
-        let s = Globals.atom.config.onDidChange ("ionide-fsi.FsiPath",
-                    (fun n -> fsipath <- n.newValue  ) |> unbox<Function>)
-        subscriptions.Add s
+        //fsipath <-  Globals.atom.config.get("ionide-fsi.FsiPath") |> unbox<string>
+        //let s = Globals.atom.config.onDidChange ("ionide-fsi.FsiPath",
+          //          (fun n -> fsipath <- n.newValue  ) |> unbox<Function>)
+        //subscriptions.Add s
 
-        if Process.isWin () |> not && fsipath = "C:/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe" then
-            Globals.atom.config.set("ionide-fsi.FsiPath", "fsharpi")
-            fsipath <- "fsharpi"
+        //if Process.isWin () |> not && fsipath = "C:/Program Files (x86)/Microsoft SDKs/F#/4.0/Framework/v4.0/Fsi.exe" then
+          //  Globals.atom.config.set("ionide-fsi.FsiPath", "fsharpi")
+            //fsipath <- "fsharpi"
 
 
 
@@ -165,19 +154,15 @@ module FsiService =
         ()
 
     let deactivate () =
-        subscriptions |> Seq.iter(fun n -> n.dispose())
-        subscriptions.Clear()
-        ()
+        //subscriptions |> Seq.iter(fun n -> n.dispose())
+        () //subscriptions.Clear()
 
-
-
-
-
+[<ReflectedDefinition>]
 type Fsi() =
     member x.activate(state:obj) =
+        InteractiveService.start ()
         FsiService.activate ()
-        ()
 
     member x.deactivate() =
+        InteractiveService.stop ()
         FsiService.deactivate ()
-        ()
