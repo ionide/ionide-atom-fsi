@@ -53,3 +53,5 @@ release.cmd
 *.js
 .fake
 issueList.md
+*.bak
+release/bin/

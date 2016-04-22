@@ -1,10 +1,15 @@
 NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
     FAKE (4.25.4)
     FunScript (1.1.94)
 GIT
-  remote: git@github.com:ionide/ionide-helpers.git
-  specs:
+  remote: https://github.com/ionide/ionide-helpers.git
      (9b047eed73f8a841bb6385cdd5d6d3a4fdc2510d)
       build: build.cmd
+  remote: https://github.com/tpetricek/FsInteractiveService.git
+     (de3ecd63ae08ef8eff90f37edcf377d127966682)
+      build: build.cmd CopyBinaries
+GITHUB
+  remote: ionide/ionide-fsharp
+    src/Core/Control.fs (52b96857cad89a311edd7b8800640c5b328bd654)
+    src/Core/Events.fs (52b96857cad89a311edd7b8800640c5b328bd654)

@@ -16,7 +16,10 @@ open Fake.ZipHelper
 #else
 
 #load "src/atom-bindings.fsx"
-#load "src/fsi.fs"
+#load "paket-files/ionide/ionide-fsharp/src/Core/Control.fs"
+#load "paket-files/ionide/ionide-fsharp/src/Core/Events.fs"
+#load "src/InteractiveServer.fs"
+#load "src/InteractivePane.fs"
 #load "src/main.fs"
 
 #endif
@@ -51,6 +54,17 @@ Target "Clean" (fun _ ->
     CleanDir "temp/release"
 )
 
+let releaseBin  = "release/bin"
+let fsisBin     = "paket-files/github.com/tpetricek/FsInteractiveService/bin/FsInteractiveService"
+
+Target "CopyFSIS" (fun _ ->
+    ensureDirectory releaseBin
+    CleanDir releaseBin
+
+    !! (fsisBin + "/*")
+    |> CopyFiles  releaseBin 
+)
+
 Target "BuildGenerator" (fun () ->
     [ __SOURCE_DIRECTORY__ @@ "src" @@ "Ionide.Fsi.fsproj" ]
     |> MSBuildDebug "" "Rebuild"
@@ -67,7 +81,7 @@ Target "RunGenerator" (fun () ->
 #if MONO
 #else
 Target "RunScript" (fun () ->
-    Ionide.Paket.Generator.translateModules "../release/lib/fsi.js"
+    Ionide.Fsi.Generator.translateModules "../release/lib/fsi.js"
 )
 #endif
 
@@ -139,6 +153,7 @@ Target "Default" DoNothing
 #else
 "Clean"
   ==> "RunScript"
+  ==> "CopyFSIS"
   ==> "InstallDependencies"
 #endif
 

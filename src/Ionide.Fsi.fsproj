@@ -33,7 +33,16 @@
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets" />
   <ItemGroup>
-    <Compile Include="fsi.fs" />
+    <Compile Include="..\paket-files\ionide\ionide-fsharp\src\Core\Control.fs">
+      <Paket>True</Paket>
+      <Link>paket-files/Control.fs</Link>
+    </Compile>
+    <Compile Include="..\paket-files\ionide\ionide-fsharp\src\Core\Events.fs">
+      <Paket>True</Paket>
+      <Link>paket-files/Events.fs</Link>
+    </Compile>
+    <Compile Include="InteractiveServer.fs" />
+    <Compile Include="InteractivePane.fs" />
     <Compile Include="main.fs" />
     <None Include="atom-bindings.fsx" />
     <None Include="paket.references" />
@@ -61,7 +70,7 @@
     </Reference>
   </ItemGroup>
   <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1')">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2')">
       <ItemGroup>
         <Reference Include="FunScript.Interop">
           <HintPath>..\packages\FunScript\lib\net40\FunScript.Interop.dll</HintPath>
