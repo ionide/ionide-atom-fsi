@@ -41,46 +41,90 @@ type SendSnippetKind =
     | File
     | Selection
 
+/// Remove any whitespace and also the specified suffix from a string
+let trimEnd (suffix:string) (text:string) = 
+    let text = text.Trim()
+    let text = if text.EndsWith(suffix) then text.Substring(0, text.Length-suffix.Length) else text
+    text.Trim()
+
+/// Go to an opened editor with the specified file or open a new one
+let private navigateToEditor file line col =
+    // Try to go to an existing opened editor
+    // In theory, `workspace.open` does this automatically, but in
+    // reality, it does not work when the item is in another panel :(
+    let mutable found = false
+    for pane in unbox<IPane[]> (Globals.atom.workspace.getPanes() ) do
+      for item in pane.getItems() do
+        try 
+          let ed = unbox<IEditor> item
+          if ed.getPath() = file then 
+            pane.activate()
+            pane.activateItem(ed) |> ignore
+            ed.setCursorBufferPosition [| line; col |] |> ignore
+            found <- true
+        with _ -> ()
+    // If it did not exist, open a new one
+    if not found then
+      Globals.atom.workspace._open(file, {initialLine=line; initialColumn=col}) |> ignore
+
 /// Removes everything currently displayed
 let private clearFsiPane () =
     jq(".fsi").empty() |> ignore
 
+/// Append panel with input or output 
+let private appendFsiPanel icon cssclass expanded (input:string) =
+    let pre = jq("<pre />").addClass("").text(if expanded then input else "(...)")
+    let icon = jq("<span />").addClass("icon " + if expanded then "icon-chevron-down" else "icon-chevron-right")
+    let padding = jq("<div class='inset-panel padded'/>").append(icon).append(pre)
+    jq("<atom-panel />").addClass("top fsi-block " + cssclass)
+      .click(fun _ ->
+          if pre.text() = "(...)" then 
+              icon.attr("class", "icon icon-chevron-down") |> ignore
+              pre.text(input) |> ignore
+          else 
+              icon.attr("class", "icon icon-chevron-right") |> ignore
+              pre.text("(...)") |> ignore
+          obj() )
+      .append(jq("<div class='padded'/>").append(padding))
+      .appendTo(jq(".fsi")) |> ignore
+
 /// Append input entered by the user
-let private appendFsiInput (input:string) =
-    jq("<div />").addClass("fsi-in-block")
-      .append(jq("<pre />").text(input)).appendTo(jq(".fsi")) |> ignore
+let private appendFsiInput input = appendFsiPanel "icon-chevron-right" "fsi-in-block" false input
 
 /// Append output produced by FSI (typically in background)
-let private appendFsiOutput (res:string) = 
-    let fsi = jq ".fsi"
-    jq("<div />").addClass("fsi-succ-block").appendTo(fsi)
-      .append(jq("<pre class='output'/>").text(res)) |> ignore
+let private appendFsiOutput res = appendFsiPanel "icon-chevron-down" "fsi-succ-block" true (trimEnd ">" res)
+
+/// Append exception reproted by the evaluation
+let private appendFsiException text = appendFsiPanel "icon-flame" "fsi-exn-block" true text
+
+/// Append error messages or warnings to the FSI output
+let private appendErrors errors = 
+    let fsi = jq(".fsi")
+    if Array.length errors = 0 then () else
+    let block = jq("<div />").addClass("fsi-error-block").appendTo(fsi)
+    for err in errors do 
+        let niceSeverity = err.severity.[0].ToString().ToUpper() + err.severity.Substring(1)
+        let niceMsg = trimEnd "." err.message
+        jq("<div />").addClass("fsi-" + err.severity)
+          .append(jq("<span class=\"inline-block highlight-" + err.severity + "\">" + niceSeverity + " #" + string err.errorNumber + "</span>"))
+          .append(jq("<span class='msg'/>").text(niceMsg))
+          .append(jq("<a class='loc'/>").text(" at line " + string err.startLine + " col " + string err.startColumn).click(fun _ ->
+              navigateToEditor err.fileName (err.startLine-1) err.startColumn |> box ))
+          .appendTo(block) |> ignore
 
 /// Apend the result of running some command (Alt+Enter)
 let private appendFsiResult res = 
-    let fsi = jq ".fsi"
     match res with
-    | Error(errs) ->
-        let block = jq("<div />").addClass("fsi-error-block").appendTo(fsi)
-        for err in errs.details do
-            jq("<div />").addClass("fsi-" + err.severity)
-              .append(jq("<span class='file'/>").text(err.fileName))
-              .append(jq("<span class='loc'/>").text(string err.startLine + ":" + string err.startColumn))
-              .append(jq("<span class='err'/>").text(err.severity + " " + (string err.errorNumber).PadLeft(4, '0')))
-              .append(jq("<span class='msg'/>").text(err.message))
-              .appendTo(block) |> ignore
-
-    | Exception(exn) ->        
-        jq("<div />").addClass("fsi-exn-block")
-          .append(jq("<pre />").text(exn.details)).appendTo(fsi) |> ignore
-
+    | Error(errs) -> 
+        appendErrors errs.details
+    | Exception(exn) -> 
+        appendFsiException exn.details
     | Success(succ) ->
-        let block = jq("<div />").addClass("fsi-succ-block").appendTo(fsi)
-        block.append(jq("<pre class='output'/>").text(succ.output)) |> ignore
+        appendErrors succ.details.warnings
+        appendFsiOutput succ.output
         if succ.details.html <> null then
-            block.append("<div class='html'>" + succ.details.html + "</div>") |> ignore
-
-    fsi.scrollTop(99999999.) |> ignore
+            jq(".fsi").append("<div class='html'>" + succ.details.html + "</div>") |> ignore
+    jq(".fsi").scrollTop(99999999.) |> ignore
 
 
 /// Find the "F# Interactive" panel
@@ -125,8 +169,9 @@ let private getFsiSelection kind =
 let private sendToFsi kind = async {
     let editor = Globals.atom.workspace.getActiveTextEditor()
     if isFSharpEditor editor then
-        do! openFsiPane()
+        // Get selection *before* openinig FSI (it changes focus)
         let line, code = getFsiSelection kind
+        do! openFsiPane()
         appendFsiInput code
 
         let! res = InteractiveServer.eval (editor.getPath()) line (code + ";;")
@@ -135,8 +180,9 @@ let private sendToFsi kind = async {
 // Repeatedly check for output produced in background
 let private checkOutputLoop () = async {
     while InteractiveServer.isRunning() do
-        let! output = InteractiveServer.output()
-        if output <> null && output <> "" then appendFsiOutput output
+        if jq(".fsi").length > 0.0 then
+            let! output = InteractiveServer.output()
+            if output <> null && output <> "" then appendFsiOutput output
         do! Async.Sleep(500) }
 
 

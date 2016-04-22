@@ -29,9 +29,10 @@ type Result<'T> =
     output : string
     details : 'T }
 
-type ItValue =
+type EvalDetails =
   { string : string
-    html : string }
+    html : string 
+    warnings : TypeCheckError[] }
 
 type EvalRequest = 
   { file : string
@@ -42,7 +43,7 @@ type EvalRequest =
 type EvaluationResult = 
   | Error of Result<TypeCheckError[]>
   | Exception of Result<string>
-  | Success of Result<ItValue>
+  | Success of Result<EvalDetails>
 
 
 // --------------------------------------------------------------------------------------
@@ -120,7 +121,6 @@ module InteractiveServer =
             let child = Process.spawn location (Process.fromPath "mono") port
             service <- Some child
             child.stderr.on("data", unbox<Function>( fun n -> Globals.console.error (n.ToString()))) |> ignore
-            ()
         with exc ->
             Globals.console.error exc
             service <- None

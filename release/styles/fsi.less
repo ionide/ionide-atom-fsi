@@ -1,25 +1,43 @@
 @import "ui-variables";
 
 .fsi {
-    padding: 5px;
-    height: 100%;
-    overflow: scroll;
-    font-size: @font-size;
-    font-family: @font-family;
+  padding: 5px;
+  height: 100%;
+  overflow: scroll;
+  font-family: @font-family;
+  font-size: 120%;
 }
 
-.fsi pre {
-    background-color: @pane-item-background-color;
+.fsi .highlight-error, .fsi .highlight-warning {
+  font-size: 90%;
 }
 
-/*.fsi-row {
-    padding: 0;
-    background: transparent;
+.fsi .fsi-in-block .padded div {
+  background: fade(@inset-panel-background-color, 50%);
 }
 
-.fsi-frame {
-    width: 100%;
-    height: 400px;
-    border: 0;
+.fsi .fsi-block .icon {
+  float: left;
 }
-*/
+
+.fsi .fsi-block pre {
+  padding: 0px;
+  margin: 2px 0px 0px 25px;
+  background: transparent;
+}
+
+.fsi .fsi-block {
+  cursor: pointer;
+}
+
+.fsi .fsi-error-block {
+  padding: 10px;
+}
+
+.fsi .padded {
+  padding: 6px 10px 6px 10px;
+}
+
+.fsi .html { 
+  padding:0px 10px 0px 10px; 
+}
