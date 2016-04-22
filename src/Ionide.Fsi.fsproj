@@ -41,8 +41,8 @@
       <Paket>True</Paket>
       <Link>paket-files/Events.fs</Link>
     </Compile>
-    <Compile Include="InteractiveService.fs" />
-    <Compile Include="fsi.fs" />
+    <Compile Include="InteractiveServer.fs" />
+    <Compile Include="InteractivePane.fs" />
     <Compile Include="main.fs" />
     <None Include="atom-bindings.fsx" />
     <None Include="paket.references" />

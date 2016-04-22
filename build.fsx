@@ -18,8 +18,8 @@ open Fake.ZipHelper
 #load "src/atom-bindings.fsx"
 #load "paket-files/ionide/ionide-fsharp/src/Core/Control.fs"
 #load "paket-files/ionide/ionide-fsharp/src/Core/Events.fs"
-#load "src/InteractiveService.fs"
-#load "src/fsi.fs"
+#load "src/InteractiveServer.fs"
+#load "src/InteractivePane.fs"
 #load "src/main.fs"
 
 #endif

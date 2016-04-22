@@ -10,7 +10,9 @@ open FunScript.TypeScript.text_buffer
 open Atom
 open Atom.FSharp
 
+// --------------------------------------------------------------------------------------
 // REST request and responses
+// --------------------------------------------------------------------------------------
 
 type TypeCheckError = 
   { startLine : int
@@ -36,15 +38,19 @@ type EvalRequest =
     line : int
     code : string }
 
-// Wrappers
-
+/// Wrapper that discriminates based on Result.result
 type EvaluationResult = 
   | Error of Result<TypeCheckError[]>
   | Exception of Result<string>
   | Success of Result<ItValue>
 
+
+// --------------------------------------------------------------------------------------
+// Communication with F# Interactive Server running in the background
+// --------------------------------------------------------------------------------------
+
 [<ReflectedDefinition>]
-module InteractiveService =
+module InteractiveServer =
 
     let private genPort () =
         let r = Globals.Math.random ()
@@ -79,6 +85,8 @@ module InteractiveService =
         with e ->
             Logger.logf "ERROR" "Parsing response failed: %O" [| e |]
             return failwith "Parsing response failed" }
+
+    let isRunning () = service.IsSome
 
     let eval file line code = async {
         let! result = request<Result<unit>> (url "eval") (Some (box { file = file; line = line; code = code }))
