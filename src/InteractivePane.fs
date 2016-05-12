@@ -72,8 +72,8 @@ let private clearFsiPane () =
     jq(".fsi").empty() |> ignore
 
 /// Append panel with input or output 
-let private appendFsiPanel icon cssclass expanded (input:string) =
-    let pre = jq("<pre />").addClass("").text(if expanded then input else "(...)")
+let private appendFsiPanel cssclass expanded (input:string) =
+    let pre = jq("<pre />").text(if expanded then input else "(...)")
     let icon = jq("<span />").addClass("icon " + if expanded then "icon-chevron-down" else "icon-chevron-right")
     let padding = jq("<div class='inset-panel padded'/>").append(icon).append(pre)
     jq("<atom-panel />").addClass("top fsi-block " + cssclass)
@@ -88,14 +88,34 @@ let private appendFsiPanel icon cssclass expanded (input:string) =
       .append(jq("<div class='padded'/>").append(padding))
       .appendTo(jq(".fsi")) |> ignore
 
+/// Append panel with HTML output 
+let private appendFsiHtmlPanel id expanded (html:string) =
+    let pre = jq("<pre />").text("(...)").hide()
+    let html = jq("<div />").addClass("content").html(html)
+    let icon = jq("<span />").addClass("icon " + if expanded then "icon-chevron-down" else "icon-chevron-right")
+    let padding = jq("<div class='inset-panel padded'/>").append(icon).append(pre).append(html)
+    jq("<atom-panel id='" + id + "' />").addClass("top fsi-block fsi-html-block")
+      .click(fun _ ->
+          if pre.text() = "(...)" then 
+              icon.attr("class", "icon icon-chevron-down") |> ignore
+              pre.hide().text("") |> ignore
+              html.show() |> ignore
+          else 
+              icon.attr("class", "icon icon-chevron-right") |> ignore
+              pre.text("(...)").show() |> ignore
+              html.hide() |> ignore
+          obj() )
+      .append(jq("<div class='padded'/>").append(padding))
+      .appendTo(jq(".fsi")) |> ignore
+
 /// Append input entered by the user
-let private appendFsiInput input = appendFsiPanel "icon-chevron-right" "fsi-in-block" false input
+let private appendFsiInput input = appendFsiPanel "fsi-in-block" false input
 
 /// Append output produced by FSI (typically in background)
-let private appendFsiOutput res = appendFsiPanel "icon-chevron-down" "fsi-succ-block" true (trimEnd ">" res)
+let private appendFsiOutput expand res = appendFsiPanel "fsi-succ-block" expand (trimEnd ">" res)
 
 /// Append exception reproted by the evaluation
-let private appendFsiException text = appendFsiPanel "icon-flame" "fsi-exn-block" true text
+let private appendFsiException text = appendFsiPanel "fsi-exn-block" true text
 
 /// Append error messages or warnings to the FSI output
 let private appendErrors errors = 
@@ -112,6 +132,21 @@ let private appendErrors errors =
               navigateToEditor err.fileName (err.startLine-1) err.startColumn |> box ))
           .appendTo(block) |> ignore
 
+/// Helper JS mapping for the function below
+type MessageEvent = { data:string }
+
+/// A handler for messages sent by <iframe> elements that HTML output may put into FSI window
+/// (a message "height <id> <number>" means max-height of iframe #<id> is given number) 
+let private setupIFrameResizeHandler () = 
+    Globals.window.addEventListener("message", fun e ->
+      let data = (unbox e).data.Split(' ') |> List.ofSeq
+      match data with
+      | [ "height"; id; hgt ] -> 
+          let hgt = if float hgt > 500.0 then 500.0 else float hgt
+          jq("#" + id).height(string hgt + "px") |> ignore
+          jq(".fsi").scrollTop(99999999.) |> ignore
+      | data -> Logger.logf "FSI" "Unhandled window message: %O" [| data |] )
+
 /// Apend the result of running some command (Alt+Enter)
 let private appendFsiResult res = 
     match res with
@@ -121,9 +156,20 @@ let private appendFsiResult res =
         appendFsiException exn.details
     | Success(succ) ->
         appendErrors succ.details.warnings
-        appendFsiOutput succ.output
+        appendFsiOutput (succ.details.html = null) succ.output
         if succ.details.html <> null then
-            jq(".fsi").append("<div class='html'>" + succ.details.html + "</div>") |> ignore
+            let id = "html" + string DateTime.Now.Ticks
+            appendFsiHtmlPanel id true succ.details.html
+
+            // Append stylesheet for fsi to all iframes in the HTML output
+            // so that they have access to basic styling of Atom
+            let style = jq("style[source-path*='fsi.less']").text()
+            let style = "<style type='text/css'>" + style + "</style>"
+            jq("#" + id + " iframe").each(fun _ frame -> 
+                let frame = frame :?> HTMLIFrameElement
+                frame.addEventListener_load(fun _ ->
+                  jq'(frame.contentDocument.body).append(style) |> box ) |> box ) |> ignore
+
     jq(".fsi").scrollTop(99999999.) |> ignore
 
 
@@ -138,28 +184,33 @@ let private tryFindFsiPane () =
 /// Opens or activates the F# Interactive panel
 let private openFsiPane () =
     Async.FromContinuations(fun (cont, econt, ccont) ->
-        match tryFindFsiPane () with
-        | Some(pane, item) ->
-            // Activate FSI and then switch back
-            let prevPane = Globals.atom.workspace.getActivePane()
-            let prevItem = prevPane.getActiveItem()
-            pane.activateItem(item) |> ignore
-            pane.activate() |> ignore
+        // Activate FSI and then switch back
+        let prevPane = Globals.atom.workspace.getActivePane()
+        let prevItem = prevPane.getActiveItem()
+        let activateAndCont () = 
             prevPane.activate() |> ignore
             prevPane.activateItem(prevItem) |> ignore
             cont ()
+        match tryFindFsiPane () with
+        | Some(pane, item) ->
+            pane.activateItem(item) |> ignore
+            pane.activate() |> ignore
+            activateAndCont ()
         | None ->
+            setupIFrameResizeHandler ()
             Globals.atom.workspace
               ._open("F# Interactive", {split = "right"})
-              ._done((fun ed -> cont ()) |> unbox<Function>))
+              ._done((fun ed -> activateAndCont ()) |> unbox<Function>))
 
 /// Get the code for current file/line/selection, together with line number
+/// (When evaluating line, move to the next line in the editor too.)
 let private getFsiSelection kind =
     let editor = Globals.atom.workspace.getActiveTextEditor()
     match kind with
     | File -> 1, editor.getText() 
     | Line -> 
         let line = editor.getCursorBufferPosition().row
+        editor.setCursorBufferPosition [| int line + 1; 0 |] |> ignore
         int line+1, editor.lineTextForBufferRow(line).Trim()
     | Selection ->
         let line = editor.getSelectedBufferRange().start.row
@@ -174,7 +225,7 @@ let private sendToFsi kind = async {
         do! openFsiPane()
         appendFsiInput code
 
-        let! res = InteractiveServer.eval (editor.getPath()) line (code + ";;")
+        let! res = InteractiveServer.eval (editor.getPath()) line code
         appendFsiResult res }
 
 // Repeatedly check for output produced in background
@@ -182,7 +233,9 @@ let private checkOutputLoop () = async {
     while InteractiveServer.isRunning() do
         if jq(".fsi").length > 0.0 then
             let! output = InteractiveServer.output()
-            if output <> null && output <> "" then appendFsiOutput output
+            if output <> null && output <> "" then 
+              appendFsiOutput true output
+              jq(".fsi").scrollTop(99999999.) |> ignore
         do! Async.Sleep(500) }
 
 
@@ -195,6 +248,7 @@ type Fsi() =
     member x.activate(state:obj) =
         // Start the F# Interactive Suave server & check for outputs
         InteractiveServer.start ()
+        Logger.activate "FSI"
         checkOutputLoop () |> Async.StartImmediate
 
         // Register command to open F# Interactive & handler that loads the FSI panel GUI
@@ -227,3 +281,4 @@ type Fsi() =
     member x.deactivate() =
         // Stop the F# Interactive Suave server
         InteractiveServer.stop ()
+        Logger.deactivate ()
