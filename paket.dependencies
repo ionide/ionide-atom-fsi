@@ -4,7 +4,7 @@ git https://github.com/ionide/ionide-helpers.git master build:"build.cmd"
 git https://github.com/ionide/FsInteractiveService.git master build:"build.cmd CopyBinaries"
 
 github ionide/ionide-fsharp:develop src/Core/Control.fs
-github ionide/ionide-fsharp:develop src/Core/Events.fs
+github ionide/ionide-fsharp:develop src/Core/Logging.fs
 
 nuget FAKE
 nuget FunScript

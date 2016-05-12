@@ -16,6 +16,14 @@
   background: fade(@inset-panel-background-color, 50%);
 }
 
+.fsi .fsi-html-block .padded div {
+  background:transparent;
+}
+
+.fsi .fsi-html-block .content {
+  margin-top:30px;
+}
+
 .fsi .fsi-block .icon {
   float: left;
 }
@@ -41,3 +49,53 @@
 .fsi .html { 
   padding:0px 10px 0px 10px; 
 }
+
+.fsi .fsi-succ-block .inset-panel {
+  min-height:30px;
+}
+
+
+/* Some basic formatting available to the output panels */
+.fsi-output .font-family {
+  font-family: @font-family;
+}
+.fsi-output .text-color {
+  color:@text-color;
+}
+.fsi-output .text-color-subtle {
+  color:@text-color-subtle;
+}
+.fsi-output .text-color-highlight {
+  color:@text-color-highlight;
+}
+.fsi-output .text-color-selected {
+  color:@text-color-selected;
+}
+
+
+.fsi-output .tool-panel-background-color {
+  background-color:@tool-panel-background-color;
+}
+.fsi-output .tool-panel-background-color-fade25 {
+  background-color:fade(@tool-panel-background-color,25%);
+}
+.fsi-output .tool-panel-background-color-fade50 {
+  background-color:fade(@tool-panel-background-color,50%);
+}
+
+
+.fsi-output .inset-panel-background-color {
+  background-color:@inset-panel-background-color;
+}
+.fsi-output .inset-panel-background-color-fade25 {
+  background-color:fade(@inset-panel-background-color, 25%);
+}
+.fsi-output .inset-panel-background-color-fade50 {
+  background-color:fade(@inset-panel-background-color, 50%);
+}
+
+
+.fsi-output .inset-panel-border-color {
+  border-color:@inset-panel-border-color;
+}
+

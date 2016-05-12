@@ -17,7 +17,7 @@ open Fake.ZipHelper
 
 #load "src/atom-bindings.fsx"
 #load "paket-files/ionide/ionide-fsharp/src/Core/Control.fs"
-#load "paket-files/ionide/ionide-fsharp/src/Core/Events.fs"
+#load "paket-files/ionide/ionide-fsharp/src/Core/Logging.fs"
 #load "src/InteractiveServer.fs"
 #load "src/InteractivePane.fs"
 #load "src/main.fs"
@@ -55,7 +55,7 @@ Target "Clean" (fun _ ->
 )
 
 let releaseBin  = "release/bin"
-let fsisBin     = "paket-files/github.com/tpetricek/FsInteractiveService/bin/FsInteractiveService"
+let fsisBin     = "paket-files/github.com/ionide/FsInteractiveService/bin/FsInteractiveService"
 
 Target "CopyFSIS" (fun _ ->
     ensureDirectory releaseBin

@@ -66,7 +66,7 @@ module InteractiveServer =
 
     let private request<'R> (url : string) (data: obj option) : Async<'R>  = async {
         try
-            Logger.logf "Fsi" "Sending request: %O" [| data |]
+            Logger.logf "FSI" "Sending request: %O" [| data |]
             let r = System.Net.WebRequest.Create url
             let req: FunScript.Core.Web.WebRequest = unbox r
             req.Headers.Add("Accept", "application/json")
@@ -84,8 +84,9 @@ module InteractiveServer =
             let json = System.Text.Encoding.UTF8.GetString stream.Contents
             return unbox<'R> (Globals.JSON.parse json)
         with e ->
+            let msg = if e <> null then e.ToString() else "<null>"
             Logger.logf "ERROR" "Parsing response failed: %O" [| e |]
-            return failwith "Parsing response failed" }
+            return failwith ("Parsing response failed: " + msg) }
 
     let isRunning () = service.IsSome
 
@@ -98,10 +99,6 @@ module InteractiveServer =
         | _ ->
             Logger.logf "ERROR" "Eval returned unexpected result: %O" [| result |]
             return failwith "Eval returned unexpected result" }
-
-    let reset () = async {
-        let! res = request<Result<unit>> (url "reset") None 
-        if res.result <> "reset" then Logger.logf "ERROR" "Received unexpected response for 'reset': %O" [| res |] }
 
     let cancel () = async {
         let! res = request<Result<unit>> (url "cancel") None 
@@ -132,3 +129,8 @@ module InteractiveServer =
     let stop () =
         service |> Option.iter (fun n -> n.kill "SIGKILL")
         service <- None
+
+    let reset () = async {
+        stop ()
+        start () }
+
