@@ -261,12 +261,12 @@ type Fsi() =
             with _ -> null)
 
         // Register commands that close/reset/clear the current FSI output
-        Globals.atom.commands.add("atom-text-editor", "FSI:Reset-REPL", fun () ->
+        Globals.atom.commands.add("atom-workspace", "FSI:Reset-REPL", fun () ->
             InteractiveServer.reset() |> Async.StartImmediate
             clearFsiPane() )
-        Globals.atom.commands.add("atom-text-editor", "FSI:Cancel-REPL", fun () ->
+        Globals.atom.commands.add("atom-workspace", "FSI:Cancel-REPL", fun () ->
             InteractiveServer.cancel() |> Async.StartImmediate )
-        Globals.atom.commands.add("atom-text-editor", "FSI:Clear-REPL", fun () ->
+        Globals.atom.commands.add("atom-workspace", "FSI:Clear-REPL", fun () ->
             clearFsiPane() )
 
         // Register commands that send some F# code to F# Interactive
