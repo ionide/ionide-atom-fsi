@@ -14,7 +14,7 @@ Plugin requires specifying path to FSI.exe on Your computer
 ## Build
 
 * Clone this repository
-* Run `build.cmd` (for Windows) or `build.sh` (for Linux / Max) to build projects
+* Run `build.cmd Build` (for Windows) or `build.sh Build` (for Linux / Max) to build projects
 * Go to `release` folder and run `apm link` to create symbolic link between plugin and Atom's plugins folder
 * Run Atom
 
