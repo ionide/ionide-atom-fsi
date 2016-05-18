@@ -1,3 +1,8 @@
+### 2.0.0 - 18.05.2016
+* New look'n'fell
+* Use FSIS
+* Enable integrations
+
 ### 1.1.4 - 22.04.2016
 * Update helpers
 

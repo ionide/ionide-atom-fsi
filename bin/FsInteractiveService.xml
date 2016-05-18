@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>FsInteractiveService</name></assembly>
+<members>
+<member name="M:FsInteractiveService.Main.evaluateInteraction(System.String,System.Int32,System.String,FsInteractiveService.Main.FsiSession)">
+<summary>
+ Evaluate interaction and return exception/error/success, possibly with formatted HTML value
+</summary>
+</member>
+<member name="M:FsInteractiveService.Main.dropTrailingWhiteSpace(System.String)">
+<summary>
+ Remove whitespace from the beginning of the snippet. For example, given
+ &quot;  let a = 10\n  a + a&quot;, we drop two spaces and get just &quot;let a = 10\na + a&quot;
+</summary>
+</member>
+<member name="M:FsInteractiveService.Main.|FsiTupleResult|_|(Microsoft.FSharp.Compiler.Interactive.Shell.FsiValue)">
+<summary>
+ Helper for extracting results from a two element tuple returned by FSI session
+</summary>
+</member>
+<member name="M:FsInteractiveService.Main.startSession">
+<summary>
+ Start the F# interactive session with HAS_FSI_ADDHTMLPRINTER symbol defined
+</summary>
+</member>
+<member name="P:FsInteractiveService.Main.addHtmlPrinter">
+<summary>
+ Extend the `fsi` object with `fsi.AddHtmlPrinter` 
+</summary>
+</member>
+</members>
+</doc>
