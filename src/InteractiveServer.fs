@@ -14,13 +14,13 @@ open Atom.FSharp
 // REST request and responses
 // --------------------------------------------------------------------------------------
 
-type TypeCheckError = 
+type TypeCheckError =
   { startLine : int
     endLine : int
     startColumn : int
-    endColumn : int 
+    endColumn : int
     fileName : string
-    severity : string 
+    severity : string
     errorNumber : int
     message : string }
 
@@ -31,16 +31,16 @@ type Result<'T> =
 
 type EvalDetails =
   { string : string
-    html : string 
+    html : string
     warnings : TypeCheckError[] }
 
-type EvalRequest = 
+type EvalRequest =
   { file : string
     line : int
     code : string }
 
 /// Wrapper that discriminates based on Result.result
-type EvaluationResult = 
+type EvaluationResult =
   | Error of Result<TypeCheckError[]>
   | Exception of Result<string>
   | Success of Result<EvalDetails>
@@ -86,7 +86,7 @@ module InteractiveServer =
         with e ->
             let msg = if e <> null then e.ToString() else "<null>"
             Logger.logf "ERROR" "Parsing response failed: %O" [| e |]
-            return failwith ("Parsing response failed: " + msg) }
+            return (unbox null) }
 
     let isRunning () = service.IsSome
 
@@ -101,17 +101,17 @@ module InteractiveServer =
             return failwith "Eval returned unexpected result" }
 
     let cancel () = async {
-        let! res = request<Result<unit>> (url "cancel") None 
-        if res.result <> "cancel" then Logger.logf "ERROR" "Received unexpected response for 'cancel': %O" [| res |] }
+        let! res = request<Result<unit>> (url "cancel") None
+        if res = unbox null || res.result <> "cancel" then Logger.logf "ERROR" "Received unexpected response for 'cancel': %O" [| res |] }
 
     let output () = async {
-        let! res = request<Result<unit>> (url "output") None 
-        if res.result <> "output" then Logger.logf "ERROR" "Received unexpected response for 'output': %O" [| res |] 
+        let! res = request<Result<unit>> (url "output") None
+        if res = unbox null || res.result <> "output" then Logger.logf "ERROR" "Received unexpected response for 'output': %O" [| res |]
         return res.output }
 
     let start () =
         try
-            let pth = 
+            let pth =
                 if Process.isWin () then @"\ionide-fsi\bin\FsInteractiveService.exe"
                 else @"/ionide-fsi/bin/FsInteractiveService.exe"
             let location = Globals.atom.packages.packageDirPaths.[0] + pth
@@ -133,4 +133,3 @@ module InteractiveServer =
     let reset () = async {
         stop ()
         start () }
-
