@@ -1,4 +1,4 @@
-### 2.0.0 - 18.05.2016
+### 2.0.1 - 18.05.2016
 * New look'n'fell
 * Use FSIS
 * Enable integrations
