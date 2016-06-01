@@ -7,9 +7,9 @@ GIT
      (9b047eed73f8a841bb6385cdd5d6d3a4fdc2510d)
       build: build.cmd
   remote: https://github.com/ionide/FsInteractiveService.git
-     (7124027ef1e7adf15e06c6adc79c03ad70ed21ee)
+     (32fc5fe07fa3e89318a0c0c601f40f69aa7971c2)
       build: build.cmd CopyBinaries
 GITHUB
   remote: ionide/ionide-fsharp
-    src/Core/Control.fs (40e518c1f1ea19fd5c9210dcd33059c73b97fd79)
-    src/Core/Logging.fs (40e518c1f1ea19fd5c9210dcd33059c73b97fd79)
+    src/Core/Control.fs (7a8796cefbd557b0b66550fa9fba346d75812c79)
+    src/Core/Logging.fs (7a8796cefbd557b0b66550fa9fba346d75812c79)

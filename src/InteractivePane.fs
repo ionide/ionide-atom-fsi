@@ -88,10 +88,76 @@ let private appendFsiPanel cssclass expanded (input:string) =
       .append(jq("<div class='padded'/>").append(padding))
       .appendTo(jq(".fsi")) |> ignore
 
+/// When evaluated HTML contains <script>, we automatically put it in an <iframe>
+/// so that Atom can load the script. This defines the body of the iframe. The
+/// parameters [head] and [body] are replaced with actuall stuff.
+/// The `fsiResizeContent` function triggers handler setup in `setupIFrameResizeHandler`
+let iframeBody = """
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <style type="text/css">
+      html, body { padding:0px; margin:0px; }
+    </style>
+    <script type="text/javascript">
+      window.fsiResizeContent = function(height) {
+        var qidx = window.location.href.indexOf('?');
+        if (qidx > -1) {
+          var id = window.location.href.substr(qidx + 1);
+          if (height == null) height = $("body").height();
+          window.parent.postMessage("height " + id + " " + height,"*");
+        }
+      }
+    </script>
+    [head]
+  </head>
+  <body>
+    [body]
+  </body>
+  </html>"""
+
+/// Generate code for <iframe> to host evaluated HTML. Note that the id after
+/// question mark is needed by `setupIFrameResizeHandler` to resize the frame on demand
+let iframeElement url id = 
+  "<iframe src=\"" + url + "?" + id + "\" " +
+  """style="border:none;width:100%;height:100px;"></iframe>"""
+
 /// Append panel with HTML output 
-let private appendFsiHtmlPanel id expanded (html:string) =
+let private appendFsiHtmlPanel expanded (res:HtmlResult) = async {
     let pre = jq("<pre />").text("(...)").hide()
-    let html = jq("<div />").addClass("content").html(html)
+    let id = "html" + string DateTime.Now.Ticks            
+
+    // If the evaluated HTML returned some <script>, we need an iframe
+    let needsIframe = 
+        res.parameters |> Seq.exists (fun kv -> kv.key = "script")
+
+    let! html = 
+      if not needsIframe then async {
+          // Just paste the content in a <div> together with all styles and such
+          let el = jq("<div />").addClass("content").html(res.body)    
+          for kv in res.parameters do el.prepend(jq(kv.value)) |> ignore
+          return el }
+      else async {
+          // Run code to register the <iframe> content with a background server
+          // hosted by the FsInteractiveService & get URL for the <iframe>
+          let head = res.parameters |> Array.map (fun kv -> kv.value) |> String.concat "\n"
+          let registerIframe = 
+            "match fsi.HtmlPrinterParameters.TryGetValue(\"background-server\") with\n" +
+            "| true, (:? System.Func<string, string> as f) -> f.Invoke(\"\"\"" +
+            iframeBody.Replace("[head]", head).Replace("[body]", res.body) + 
+            "                                                          \"\"\")\n" +
+            " | _ -> null" 
+          let! url = InteractiveServer.eval "/ionide.fsx" 1 registerIframe
+          
+          // Append the <iframe> element to Atom's output
+          let el = jq("<div />").addClass("content")
+          match url with
+          | Success succ -> 
+              return el.html(iframeElement succ.details.string id) 
+          | _ -> return el.html("Registering iframe failed.") }
+
+    // Wrap the content with standard collapsible output panel (similar to output/input elements)
     let icon = jq("<span />").addClass("icon " + if expanded then "icon-chevron-down" else "icon-chevron-right")
     let padding = jq("<div class='inset-panel padded'/>").append(icon).append(pre).append(html)
     jq("<atom-panel id='" + id + "' />").addClass("top fsi-block fsi-html-block")
@@ -106,7 +172,7 @@ let private appendFsiHtmlPanel id expanded (html:string) =
               html.hide() |> ignore
           obj() )
       .append(jq("<div class='padded'/>").append(padding))
-      .appendTo(jq(".fsi")) |> ignore
+      .appendTo(jq(".fsi")) |> ignore }
 
 /// Append input entered by the user
 let private appendFsiInput input = appendFsiPanel "fsi-in-block" false input
@@ -143,12 +209,12 @@ let private setupIFrameResizeHandler () =
       match data with
       | [ "height"; id; hgt ] -> 
           let hgt = if float hgt > 500.0 then 500.0 else float hgt
-          jq("#" + id).height(string hgt + "px") |> ignore
+          jq("#" + id + " iframe").height(string hgt + "px") |> ignore
           jq(".fsi").scrollTop(99999999.) |> ignore
       | data -> Logger.logf "FSI" "Unhandled window message: %O" [| data |] )
 
 /// Apend the result of running some command (Alt+Enter)
-let private appendFsiResult res = 
+let private appendFsiResult res = async {
     match res with
     | Error(errs) -> 
         appendErrors errs.details
@@ -156,21 +222,11 @@ let private appendFsiResult res =
         appendFsiException exn.details
     | Success(succ) ->
         appendErrors succ.details.warnings
-        appendFsiOutput (succ.details.html = null) succ.output
-        if succ.details.html <> null then
-            let id = "html" + string DateTime.Now.Ticks
-            appendFsiHtmlPanel id true succ.details.html
+        appendFsiOutput (box succ.details.html = null) succ.output
+        if box succ.details.html <> null then
+            do! appendFsiHtmlPanel true succ.details.html
 
-            // Append stylesheet for fsi to all iframes in the HTML output
-            // so that they have access to basic styling of Atom
-            let style = jq("style[source-path*='fsi.less']").text()
-            let style = "<style type='text/css'>" + style + "</style>"
-            jq("#" + id + " iframe").each(fun _ frame -> 
-                let frame = frame :?> HTMLIFrameElement
-                frame.addEventListener_load(fun _ ->
-                  jq'(frame.contentDocument.body).append(style) |> box ) |> box ) |> ignore
-
-    jq(".fsi").scrollTop(99999999.) |> ignore
+    jq(".fsi").scrollTop(99999999.) |> ignore }
 
 
 /// Find the "F# Interactive" panel
@@ -226,7 +282,7 @@ let private sendToFsi kind = async {
         appendFsiInput code
 
         let! res = InteractiveServer.eval (editor.getPath()) line code
-        appendFsiResult res }
+        do! appendFsiResult res }
 
 // Repeatedly check for output produced in background
 let private checkOutputLoop () = async {
