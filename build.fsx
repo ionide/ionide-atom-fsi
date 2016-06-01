@@ -144,6 +144,7 @@ Target "Release" (fun _ ->
 // --------------------------------------------------------------------------------------
 
 Target "Default" DoNothing
+Target "Build" DoNothing
 
 #if MONO
 "Clean"
@@ -153,12 +154,13 @@ Target "Default" DoNothing
 #else
 "Clean"
   ==> "RunScript"
-  ==> "CopyFSIS"
   ==> "InstallDependencies"
 #endif
 
 "InstallDependencies"
   ==> "Default"
+  ==> "CopyFSIS"
+  ==> "Build"    
   ==> "TagDevelopBranch"
   ==> "PushToMaster"
   ==> "Release"
