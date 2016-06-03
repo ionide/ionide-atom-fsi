@@ -110,11 +110,13 @@ module InteractiveServer =
 
     let cancel () = async {
         let! res = request<Result<unit>> (url "cancel") None
-        if res = unbox null || res.result <> "cancel" then Logger.logf "ERROR" "Received unexpected response for 'cancel': %O" [| res |] }
+        if box res = null || res.result <> "cancel" then 
+          Logger.logf "ERROR" "Received unexpected response for 'cancel': %O" [| res |] }
 
     let output () = async {
         let! res = request<Result<unit>> (url "output") None
-        if res = unbox null || res.result <> "output" then Logger.logf "ERROR" "Received unexpected response for 'output': %O" [| res |]
+        if box res = null || res.result <> "output" then 
+          Logger.logf "ERROR" "Received unexpected response for 'output': %O" [| res |]
         return res.output }
 
     let start () =
