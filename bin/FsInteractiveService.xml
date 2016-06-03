@@ -2,6 +2,36 @@
 <doc>
 <assembly><name>FsInteractiveService</name></assembly>
 <members>
+<member name="T:FsInteractiveService.Main.ToolTipResponse">
+<summary>
+ Reply to /tooltip
+</summary>
+</member>
+<member name="T:FsInteractiveService.Main.Result">
+<summary>
+ Response data for /eval
+</summary>
+</member>
+<member name="T:FsInteractiveService.Main.ToolTipRequest">
+<summary>
+ Request dta for /tooltip
+</summary>
+</member>
+<member name="T:FsInteractiveService.Main.LineColumnRequest">
+<summary>
+ Request data for /paramhints and /completion
+</summary>
+</member>
+<member name="T:FsInteractiveService.Main.EvaluationRequest">
+<summary>
+ Request data for /eval
+</summary>
+</member>
+<member name="M:FsInteractiveService.Main.boxXmlDoc(FsInteractiveService.Shared.XmlDoc)">
+<summary>
+ Turns XML doc into `null + FullXmlDoc + LookupXmlDoc` for JSON encoding
+</summary>
+</member>
 <member name="M:FsInteractiveService.Main.evaluateInteraction(System.String,System.Int32,System.String,FsInteractiveService.Main.FsiSession)">
 <summary>
  Evaluate interaction and return exception/error/success, possibly with formatted HTML value

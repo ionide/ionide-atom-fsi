@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<doc>
+<assembly><name>FsInteractiveService.Shared</name></assembly>
+<members>
+<member name="T:FsInteractiveService.Shared.ParameterTooltip.EmptyTip">
+<summary>
+A empty tip
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.ParameterTooltip.ToolTip">
+<summary>
+A ToolTip of signature, summary
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.ToolTips.EmptyTip">
+<summary>
+A empty tip
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.ToolTips.ToolTip">
+<summary>
+A ToolTip of signature, summary
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.XmlDoc.EmptyDoc">
+<summary>
+No xmldoc
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.XmlDoc.Lookup">
+<summary>
+A lookup of key, filename
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.XmlDoc.Full">
+<summary>
+A full xmldoc tooltip
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.FrameworkExt.StringBuilder.FirstCharacterIs(System.Text.StringBuilder,Microsoft.FSharp.Core.FSharpFunc{System.Char,System.Boolean})">
+<summary>
+Apply a predicate to the first character of the StringBuilder instance
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.FrameworkExt.StringBuilder.LastCharacterIs(System.Text.StringBuilder,Microsoft.FSharp.Core.FSharpFunc{System.Char,System.Boolean})">
+<summary>
+Apply a predicate to the last character of the StringBuilder instance
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.Lexer.getSymbol``1(``0,System.Int32,System.Int32,System.String,FsInteractiveService.Shared.SymbolLookupKind,System.String[],Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{System.String},Microsoft.FSharp.Core.FSharpFunc{System.Int32,System.Int64}}})">
+<summary>
+ Gets the option if Some x, otherwise try to get another value
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.Lexer.tokenizeLine``2(``0,System.String[],``1,System.String,Microsoft.FSharp.Core.FSharpFunc{``0,Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Collections.FSharpList{System.String},Microsoft.FSharp.Core.FSharpFunc{``1,System.Int64}}})">
+<summary>
+ Return all tokens of current line
+</summary>
+</member>
+<member name="P:FsInteractiveService.Shared.Lexer.queryLexState">
+<summary>
+ Provide a default implementation where we cache lex states of the current document.
+ Assume that current document will be queried repeatedly
+ Note: The source and defines are equality checked whenever this function is used which 
+ means that currentDocumentState is rebuilt whenever a different source or defines list is presented
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.Lexer.getLexStates(Microsoft.FSharp.Collections.FSharpList{System.String},System.String)">
+<summary>
+ Get the array of all lex states in current source
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.List.maxUnderThreshold(System.Int32)">
+<summary>
+Returns the greatest of all elements in the list that is less than the threshold
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.Option.orTry``1(Microsoft.FSharp.Core.FSharpFunc{Microsoft.FSharp.Core.Unit,Microsoft.FSharp.Core.FSharpOption{``0}},Microsoft.FSharp.Core.FSharpOption{``0})">
+<summary>
+ Gets the option if Some x, otherwise try to get another value
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.Option.flatten``1(Microsoft.FSharp.Core.FSharpOption{Microsoft.FSharp.Core.FSharpOption{``0}})">
+<summary>
+ Some(Some x) -&gt; Some x | None -&gt; None
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.Option.ofString(System.String)">
+<summary>
+ Convert string into Option string where null and String.Empty result in None
+</summary>
+</member>
+<member name="T:FsInteractiveService.Shared.Parsing">
+<summary>
+ Parsing utilities for IntelliSense (e.g. parse identifier on the left-hand side
+ of the current cursor location etc.)
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.String.wrapText(System.String,System.Int32)">
+<summary>
+ Wrap text so it fits to a line width
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.String.splitLine(System.Text.StringBuilder,System.String,System.Int32)">
+<summary>
+ Split a line so it fits to a line width
+</summary>
+</member>
+<member name="M:FsInteractiveService.Shared.SymbolTooltips.op_PlusPlus(System.String,System.String)">
+<summary>
+ Concat two strings with a space between if both a and b are not IsNullOrWhiteSpace
+</summary>
+</member>
+</members>
+</doc>
