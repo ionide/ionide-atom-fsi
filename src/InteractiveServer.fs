@@ -29,9 +29,17 @@ type Result<'T> =
     output : string
     details : 'T }
 
+type HtmlKeyValue = 
+  { key : string
+    value : string }
+
+type HtmlResult =
+  { body : string
+    parameters : HtmlKeyValue[] }
+
 type EvalDetails =
   { string : string
-    html : string
+    html : HtmlResult
     warnings : TypeCheckError[] }
 
 type EvalRequest =
