@@ -1,3 +1,6 @@
+### 2.1.1 - 03.06.2016
+* Fix null handling
+
 ### 2.1.0 - 03.06.2016
 * Update FSIS
 * Drop the hack with injecting styles into Atom
