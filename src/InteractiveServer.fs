@@ -61,6 +61,9 @@ type EvaluationResult =
 [<ReflectedDefinition>]
 module InteractiveServer =
 
+    [<JSEmit("return {0}.charCodeAt({1});")>]
+    let charCodeAt (s:string) (i:int) : int = failwith "JS"
+
     let private genPort () =
         let r = Globals.Math.random ()
         let r' = r * (8999. - 8100.) + 8100.
@@ -99,6 +102,8 @@ module InteractiveServer =
     let isRunning () = service.IsSome
 
     let eval file line code = async {
+        // Drop UTF8 BOM character, if Atom left it at the beginning of the string
+        let code = if charCodeAt code 0 = 65279 then code.Substring(1) else code
         let! result = request<Result<unit>> (url "eval") (Some (box { file = file; line = line; code = code }))
         match result.result with
         | "exception" -> return Exception (unbox result)
