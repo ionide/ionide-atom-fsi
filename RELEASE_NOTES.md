@@ -1,3 +1,6 @@
+### 2.1.2 - 7.06.2016
+* Fix UTF8 BOM problem
+
 ### 2.1.1 - 03.06.2016
 * Fix null handling
 
