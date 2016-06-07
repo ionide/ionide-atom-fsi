@@ -87,6 +87,7 @@ let private appendFsiPanel cssclass expanded (input:string) =
           obj() )
       .append(jq("<div class='padded'/>").append(padding))
       .appendTo(jq(".fsi")) |> ignore
+    jq(".fsi").scrollTop(99999999.) |> ignore
 
 /// When evaluated HTML contains <script>, we automatically put it in an <iframe>
 /// so that Atom can load the script. This defines the body of the iframe. The
@@ -225,7 +226,6 @@ let private appendFsiResult res = async {
         appendFsiOutput (box succ.details.html = null) succ.output
         if box succ.details.html <> null then
             do! appendFsiHtmlPanel true succ.details.html
-
     jq(".fsi").scrollTop(99999999.) |> ignore }
 
 
