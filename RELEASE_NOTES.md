@@ -1,3 +1,6 @@
+### 2.1.3 - 8.06.2016
+* Scroll to end after entering input
+
 ### 2.1.2 - 7.06.2016
 * Fix UTF8 BOM problem
 
