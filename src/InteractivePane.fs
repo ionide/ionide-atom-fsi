@@ -3,7 +3,7 @@ module Ionide.Fsi
 
 open System
 open Atom
-open Atom.FSharp 
+open Atom.FSharp
 open Atom.FSharp.Control
 
 open FunScript
@@ -36,13 +36,13 @@ module Bindings =
 // Manipulating the F# Interactive panel in various ways
 // --------------------------------------------------------------------------------------
 
-type SendSnippetKind = 
-    | Line 
+type SendSnippetKind =
+    | Line
     | File
     | Selection
 
 /// Remove any whitespace and also the specified suffix from a string
-let trimEnd (suffix:string) (text:string) = 
+let trimEnd (suffix:string) (text:string) =
     let text = text.Trim()
     let text = if text.EndsWith(suffix) then text.Substring(0, text.Length-suffix.Length) else text
     text.Trim()
@@ -55,9 +55,9 @@ let private navigateToEditor file line col =
     let mutable found = false
     for pane in unbox<IPane[]> (Globals.atom.workspace.getPanes() ) do
       for item in pane.getItems() do
-        try 
+        try
           let ed = unbox<IEditor> item
-          if ed.getPath() = file then 
+          if ed.getPath() = file then
             pane.activate()
             pane.activateItem(ed) |> ignore
             ed.setCursorBufferPosition [| line; col |] |> ignore
@@ -71,17 +71,17 @@ let private navigateToEditor file line col =
 let private clearFsiPane () =
     jq(".fsi").empty() |> ignore
 
-/// Append panel with input or output 
+/// Append panel with input or output
 let private appendFsiPanel cssclass expanded (input:string) =
     let pre = jq("<pre />").text(if expanded then input else "(...)")
     let icon = jq("<span />").addClass("icon " + if expanded then "icon-chevron-down" else "icon-chevron-right")
     let padding = jq("<div class='inset-panel padded'/>").append(icon).append(pre)
     jq("<atom-panel />").addClass("top fsi-block " + cssclass)
       .click(fun _ ->
-          if pre.text() = "(...)" then 
+          if pre.text() = "(...)" then
               icon.attr("class", "icon icon-chevron-down") |> ignore
               pre.text(input) |> ignore
-          else 
+          else
               icon.attr("class", "icon icon-chevron-right") |> ignore
               pre.text("(...)") |> ignore
           obj() )
@@ -120,42 +120,42 @@ let iframeBody = """
 
 /// Generate code for <iframe> to host evaluated HTML. Note that the id after
 /// question mark is needed by `setupIFrameResizeHandler` to resize the frame on demand
-let iframeElement url id = 
+let iframeElement url id =
   "<iframe src=\"" + url + "?" + id + "\" " +
   """style="border:none;width:100%;height:100px;"></iframe>"""
 
-/// Append panel with HTML output 
+/// Append panel with HTML output
 let private appendFsiHtmlPanel expanded (res:HtmlResult) = async {
     let pre = jq("<pre />").text("(...)").hide()
-    let id = "html" + string DateTime.Now.Ticks            
+    let id = "html" + string DateTime.Now.Ticks
 
     // If the evaluated HTML returned some <script>, we need an iframe
-    let needsIframe = 
+    let needsIframe =
         res.parameters |> Seq.exists (fun kv -> kv.key = "script")
 
-    let! html = 
+    let! html =
       if not needsIframe then async {
           // Just paste the content in a <div> together with all styles and such
-          let el = jq("<div />").addClass("content").html(res.body)    
+          let el = jq("<div />").addClass("content").html(res.body)
           for kv in res.parameters do el.prepend(jq(kv.value)) |> ignore
           return el }
       else async {
           // Run code to register the <iframe> content with a background server
           // hosted by the FsInteractiveService & get URL for the <iframe>
           let head = res.parameters |> Array.map (fun kv -> kv.value) |> String.concat "\n"
-          let registerIframe = 
+          let registerIframe =
             "match fsi.HtmlPrinterParameters.TryGetValue(\"background-server\") with\n" +
             "| true, (:? System.Func<string, string> as f) -> f.Invoke(\"\"\"" +
-            iframeBody.Replace("[head]", head).Replace("[body]", res.body) + 
+            iframeBody.Replace("[head]", head).Replace("[body]", res.body) +
             "                                                          \"\"\")\n" +
-            " | _ -> null" 
+            " | _ -> null"
           let! url = InteractiveServer.eval "/ionide.fsx" 1 registerIframe
-          
+
           // Append the <iframe> element to Atom's output
           let el = jq("<div />").addClass("content")
           match url with
-          | Success succ -> 
-              return el.html(iframeElement succ.details.string id) 
+          | Success succ ->
+              return el.html(iframeElement succ.details.string id)
           | _ -> return el.html("Registering iframe failed.") }
 
     // Wrap the content with standard collapsible output panel (similar to output/input elements)
@@ -163,11 +163,11 @@ let private appendFsiHtmlPanel expanded (res:HtmlResult) = async {
     let padding = jq("<div class='inset-panel padded'/>").append(icon).append(pre).append(html)
     jq("<atom-panel id='" + id + "' />").addClass("top fsi-block fsi-html-block")
       .click(fun _ ->
-          if pre.text() = "(...)" then 
+          if pre.text() = "(...)" then
               icon.attr("class", "icon icon-chevron-down") |> ignore
               pre.hide().text("") |> ignore
               html.show() |> ignore
-          else 
+          else
               icon.attr("class", "icon icon-chevron-right") |> ignore
               pre.text("(...)").show() |> ignore
               html.hide() |> ignore
@@ -185,11 +185,11 @@ let private appendFsiOutput expand res = appendFsiPanel "fsi-succ-block" expand 
 let private appendFsiException text = appendFsiPanel "fsi-exn-block" true text
 
 /// Append error messages or warnings to the FSI output
-let private appendErrors errors = 
+let private appendErrors errors =
     let fsi = jq(".fsi")
     if Array.length errors = 0 then () else
     let block = jq("<div />").addClass("fsi-error-block").appendTo(fsi)
-    for err in errors do 
+    for err in errors do
         let niceSeverity = err.severity.[0].ToString().ToUpper() + err.severity.Substring(1)
         let niceMsg = trimEnd "." err.message
         jq("<div />").addClass("fsi-" + err.severity)
@@ -203,12 +203,12 @@ let private appendErrors errors =
 type MessageEvent = { data:string }
 
 /// A handler for messages sent by <iframe> elements that HTML output may put into FSI window
-/// (a message "height <id> <number>" means max-height of iframe #<id> is given number) 
-let private setupIFrameResizeHandler () = 
+/// (a message "height <id> <number>" means max-height of iframe #<id> is given number)
+let private setupIFrameResizeHandler () =
     Globals.window.addEventListener("message", fun e ->
       let data = (unbox e).data.Split(' ') |> List.ofSeq
       match data with
-      | [ "height"; id; hgt ] -> 
+      | [ "height"; id; hgt ] ->
           let hgt = if float hgt > 500.0 then 500.0 else float hgt
           jq("#" + id + " iframe").height(string hgt + "px") |> ignore
           jq(".fsi").scrollTop(99999999.) |> ignore
@@ -217,9 +217,9 @@ let private setupIFrameResizeHandler () =
 /// Apend the result of running some command (Alt+Enter)
 let private appendFsiResult res = async {
     match res with
-    | Error(errs) -> 
+    | Error(errs) ->
         appendErrors errs.details
-    | Exception(exn) -> 
+    | Exception(exn) ->
         appendFsiException exn.details
     | Success(succ) ->
         appendErrors succ.details.warnings
@@ -230,20 +230,20 @@ let private appendFsiResult res = async {
 
 
 /// Find the "F# Interactive" panel
-let private tryFindFsiPane () = 
+let private tryFindFsiPane () =
     let panes = unbox<IPane[]> (Globals.atom.workspace.getPanes())
     [ for pane in panes do
           for item in pane.getItems() do
               if getTitle item = "F# Interactive" then yield pane, item ]
     |> List.tryPick Some
-        
+
 /// Opens or activates the F# Interactive panel
 let private openFsiPane () =
     Async.FromContinuations(fun (cont, econt, ccont) ->
         // Activate FSI and then switch back
         let prevPane = Globals.atom.workspace.getActivePane()
         let prevItem = prevPane.getActiveItem()
-        let activateAndCont () = 
+        let activateAndCont () =
             prevPane.activate() |> ignore
             prevPane.activateItem(prevItem) |> ignore
             cont ()
@@ -256,15 +256,15 @@ let private openFsiPane () =
             setupIFrameResizeHandler ()
             Globals.atom.workspace
               ._open("F# Interactive", {split = "right"})
-              ._done((fun ed -> activateAndCont ()) |> unbox<Function>))
+              ._then ((fun ed -> activateAndCont ()) |> unbox<Function>))
 
 /// Get the code for current file/line/selection, together with line number
 /// (When evaluating line, move to the next line in the editor too.)
 let private getFsiSelection kind =
     let editor = Globals.atom.workspace.getActiveTextEditor()
     match kind with
-    | File -> 1, editor.getText() 
-    | Line -> 
+    | File -> 1, editor.getText()
+    | Line ->
         let line = editor.getCursorBufferPosition().row
         editor.setCursorBufferPosition [| int line + 1; 0 |] |> ignore
         int line+1, editor.lineTextForBufferRow(line).Trim()
@@ -289,7 +289,7 @@ let private checkOutputLoop () = async {
     while InteractiveServer.isRunning() do
         if jq(".fsi").length > 0.0 then
             let! output = InteractiveServer.output()
-            if output <> null && output <> "" then 
+            if output <> null && output <> "" then
               appendFsiOutput true output
               jq(".fsi").scrollTop(99999999.) |> ignore
         do! Async.Sleep(500) }
@@ -311,7 +311,7 @@ type Fsi() =
         Globals.atom.commands.add("atom-workspace", "FSI:Open", fun () ->
             Async.StartImmediate (openFsiPane ()))
         Globals.atom.workspace.addOpener(fun uri ->
-            try 
+            try
                 if uri.EndsWith "F# Interactive" then box (newFsiView ())
                 else null
             with _ -> null)
